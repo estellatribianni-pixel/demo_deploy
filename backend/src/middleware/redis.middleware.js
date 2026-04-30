@@ -19,8 +19,11 @@ export const cacheMovies=async (req,res,next)=>{
         const originalSend = res.json.bind(res);
         
         res.json = (data) => {
+            if (res.headersSent) return;
             try{
+                if (res.statusCode === 200) {
                 client.setEx(key, 3600, JSON.stringify(data));
+                }
             }
             catch(e){
                 console.error("Redis SET error:", e);

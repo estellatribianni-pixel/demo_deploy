@@ -7,7 +7,9 @@ import pg from "pg";
 dotenv.config();
 
 const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({ connectionString,ssl: {
+        rejectUnauthorized: false
+    }});
 const adapter = new PrismaPg(pool);
 
 const globalForPrisma = global;
