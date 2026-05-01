@@ -5,12 +5,14 @@ const QUERY_KEY = ["favorites"];
 
 function useFavorite() {
   const queryClient = useQueryClient();
+  const token = localStorage.getItem("movie_mate_token");
 
   const { data: favorites = [], isLoading } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: fetchFavorite,
     retry: false,
     staleTime: 1000 * 60 * 2,
+    enabled: !!token,
   });
 
   const isFav = (id) => favorites.some((item) => (item.movieId) === (id));

@@ -63,8 +63,31 @@ export const getMovieReviews = asyncHandler(async (req, res) => {
     throw new AppError("Movie ID is required", 400);
   }
 
-  const data = await tmdbService.fetchMovieReviews(id);
-  res.status(200).json(data);
+  const tmdbData = await tmdbService.fetchMovieReviews(id);
+
+  const localReviews = await prisma.review.findMany({
+    where: { movieId },
+    include: {
+      user: { select: { username: true } },
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  const formatLocalReviews = localReviews.map((rev) => ({
+    id: rev.id,
+    author: rev.user.username,
+    content: rev.content,
+    created_at: rev.createdAt,
+    author_details: {
+      rating: rev.rating
+    }
+  }));
+
+  res.status(200).json({
+    ...tmdbData,
+    results: [...formattedLocalReviews, ...(tmdbData.results || [])]
+  });
+
 });
 
 export const deleteReview = asyncHandler(async (req, res) => {

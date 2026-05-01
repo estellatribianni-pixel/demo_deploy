@@ -17,8 +17,7 @@ export const apiHandler = async (endpoint, options = {}) => {
 
   if (response.status === 401) {
     try {
-      // REFRESH
-      const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
+      const refreshRes = await fetch(`${API}/auth/refresh`, {
         method: "POST",
         credentials: "include",
       });
