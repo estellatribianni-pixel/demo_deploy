@@ -59,7 +59,7 @@ export const getUserReview = asyncHandler(async (req, res) => {
 export const getMovieReviews = asyncHandler(async (req, res) => {
   const movieId = req.params.id;
 
-  if (!id) {
+  if (!movieId) {
     throw new AppError("Movie ID is required", 400);
   }
 
