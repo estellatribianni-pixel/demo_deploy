@@ -58,20 +58,26 @@ export const getUserReview = asyncHandler(async (req, res) => {
 
 export const getMovieReviews = asyncHandler(async (req, res) => {
   const movieId = parseInt(req.params.id, 10);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5; 
+  const skip = (page - 1) * limit;
 
   if (!movieId) {
     throw new AppError("Movie ID is required", 400);
   }
 
-  const tmdbData = await tmdbService.fetchMovieReviews(movieId);
+  const tmdbData = await tmdbService.fetchMovieReviews(movieId,page);
 
-  const localReviews = await prisma.review.findMany({
-    where: { movieId },
-    include: {
-      user: { select: { username: true } },
-    },
-    orderBy: { createdAt: "desc" }
-  });
+  const [localReviews, totalLocal] = await Promise.all([
+    prisma.review.findMany({
+      where: { movieId },
+      skip,
+      take: limit,
+      include: { user: { select: { username: true } } },
+      orderBy: { createdAt: "desc" }
+    }),
+    prisma.review.count({ where: { movieId } })
+  ]);
 
   const formatLocalReviews = localReviews.map((rev) => ({
     id: rev.id,
@@ -84,14 +90,24 @@ export const getMovieReviews = asyncHandler(async (req, res) => {
   }));
 
   res.status(200).json({
-    ...tmdbData,
-    results: [...formatLocalReviews, ...(tmdbData.results || [])]
+    local: {
+      results: formatLocalReviews,
+      page,
+      total_pages: Math.ceil(totalLocal / limit) || 1,
+      total_results: totalLocal
+    },
+    tmdb: {
+      results: tmdbData.results || [],
+      page: tmdbData.page || 1,
+      total_pages: tmdbData.total_pages || 1,
+      total_results: tmdbData.total_results || 0
+    }
   });
 
 });
 
 export const deleteReview = asyncHandler(async (req, res) => {
-  const reviewId = req.params.reviewId;
+  const reviewId =req.params.reviewId;
   const userId = req.user.userId;
 
   const review = await prisma.review.findUnique({

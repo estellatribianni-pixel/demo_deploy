@@ -1,18 +1,19 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchFavorite, addFavorite, removeFavorite } from "../services/Favorite.js";
+import {useAuth} from "../context/AuthContext.jsx";
 
 const QUERY_KEY = ["favorites"];
 
 function useFavorite() {
   const queryClient = useQueryClient();
-  const token = localStorage.getItem("movie_mate_token");
+  const {isAuthenticated} = useAuth();
 
   const { data: favorites = [], isLoading } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: fetchFavorite,
     retry: false,
     staleTime: 1000 * 60 * 2,
-    enabled: !!token,
+    enabled: isAuthenticated,
   });
 
   const isFav = (id) => favorites.some((item) => (item.movieId) === (id));

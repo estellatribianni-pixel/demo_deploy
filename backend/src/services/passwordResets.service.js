@@ -15,9 +15,9 @@ export const forgotPassword = async (email) => {
     const hashOTP = hashToken(OTP)
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
-    await prisma.PasswordReset.deleteMany({ where: { userId: user.id } })
+    await prisma.passwordReset.deleteMany({ where: { userId: user.id } })
 
-    await prisma.PasswordReset.create({
+    await prisma.passwordReset.create({
         data: {
             userId: user.id, tokenHash: hashOTP, expiresAt
         }
@@ -32,7 +32,7 @@ export const resetPassword = async (email, otp, newpassword) => {
 
     const otphash = hashToken(otp)
 
-    const res = await prisma.PasswordReset.findFirst({
+    const res = await prisma.passwordReset.findFirst({
         where: { userId: user.id, used: false },
         orderBy: { expiresAt: 'desc' }
     })
@@ -43,7 +43,7 @@ export const resetPassword = async (email, otp, newpassword) => {
     if (new Date(res.expiresAt) < new Date()) throw new AppError("Expired OTP", 400);
 
     if (res.tokenHash !== otphash) {
-        await prisma.PasswordReset.update({
+        await prisma.passwordReset.update({
             where: { id: res.id },
             data: { attempts: res.attempts + 1 }
         });
@@ -53,7 +53,7 @@ export const resetPassword = async (email, otp, newpassword) => {
     const hashedPassword = await bcrypt.hash(newpassword, 10);
 
     await prisma.$transaction([
-        prisma.PasswordReset.update({
+        prisma.passwordReset.update({
             where: { id: res.id },
             data: { used: true }
         }),
@@ -61,7 +61,7 @@ export const resetPassword = async (email, otp, newpassword) => {
             where: { id: user.id },
             data: { password: hashedPassword }
         }),
-        prisma.RefreshToken.deleteMany({
+        prisma.refreshToken.deleteMany({
             where: { userId: user.id }
         })
     ]);

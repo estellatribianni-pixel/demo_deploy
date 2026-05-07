@@ -14,15 +14,14 @@ import Category from "./Pages/Category";
 import Auth from "./auth/auth";
 import LandingPage from "./Pages/LandingPage";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import VerifyEmail from "./Pages/VerfiyEmail";
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        {/* Landing page — standalone, no navbar */}
         <Route path="/" element={<LandingPage />} />
-
-        {/* App shell with navbar */}
+        <Route path="/verify" element={<VerifyEmail />} />
         <Route element={<Navbar />}>
           <Route path="/browse" element={<Home />} />
           <Route path="/category/:category" element={<Category />} />

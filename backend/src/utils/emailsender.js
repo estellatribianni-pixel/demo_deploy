@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { EMAIL_PASS, EMAIL_USER } from "../configenv.js";
+import { CLIENT_URL, EMAIL_PASS, EMAIL_USER } from "../configenv.js";
 
 const transporter=nodemailer.createTransport({
     service: "gmail",
@@ -11,7 +11,8 @@ const transporter=nodemailer.createTransport({
 
 
 export const sendVerificationEmail = async (email, token) => {
-  const url = `http://localhost:5173/verify?token=${token}`;
+  const clientUrl=CLIENT_URL||"http://localhost:5173"
+  const url = `${clientUrl}/verify?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
